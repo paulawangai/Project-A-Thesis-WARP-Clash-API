@@ -24,6 +24,8 @@ from flask import current_app
 from config import DELAY_THRESHOLD, LOSS_THRESHOLD
 from models import Entrypoint
 
+from fp_decorators.pure import pure
+
 ENTRYPOINT_SCRIPT_PATH = './scripts/get_entrypoints.sh'
 
 RESULT_PATH = './config/result.csv'
@@ -137,6 +139,7 @@ def getEntrypoints(ipv6=False):
     return entrypoints
 
 
+@pure(allow_logging=True)
 def getBestEntrypoints(num=1, ipv6=False):
     """
     Get best entrypoints
@@ -145,7 +148,8 @@ def getBestEntrypoints(num=1, ipv6=False):
     :return: list of entrypoints
     """
     # sort by loss and delay
-    returnEntryPoints = sorted(getEntrypoints(ipv6), key=lambda x: (x.loss, x.delay))[:num]
+    all_entrypoints = getEntrypoints(ipv6)
+    returnEntryPoints = sorted(all_entrypoints, key=lambda x: (x.loss, x.delay))[:num]
     return returnEntryPoints
 
 

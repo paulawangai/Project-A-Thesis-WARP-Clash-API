@@ -33,6 +33,7 @@ from services.common import getCurrentAccount
 from utils.entrypoints import getEntrypoints, getBestEntrypoints
 from utils.geoip import GeoIP
 from utils.node_name import NodeNameGenerator
+from fp_decorators.pure import pure 
 
 CF_CONFIG = yaml.safe_load(open("./config/cf-config.json", "r", encoding="utf8"))
 CLASH = yaml.safe_load(open("./config/clash.json", "r", encoding="utf8"))
@@ -48,6 +49,7 @@ SING_BOX = yaml.safe_load(open("./config/sing-box.json", "r", encoding="utf8"))
 GEOIP = GeoIP('./config/geolite/GeoLite2-Country.mmdb')
 
 
+@pure(allow_random=True, allow_logging=True)
 def getRandomEntryPoints(best=False,
                          logger=logging.getLogger(__name__),
                          ipv6=False):
@@ -75,6 +77,7 @@ def getRandomEntryPoints(best=False,
     return random_points, ""
 
 
+@pure(allow_random=True, allow_logging=True)
 def generateClashSubFile(account: Account = None,
                          logger=logging.getLogger(__name__),
                          best=False,
@@ -94,7 +97,7 @@ def generateClashSubFile(account: Account = None,
     :param ipv6: Whether to use ipv6 entrypoints
     :return:
     """
-    account = getCurrentAccount(logger) if account is None else account
+    account_to_use = getCurrentAccount(logger) if account is None else account
 
     random_points, msg = getRandomEntryPoints(best, logger, ipv6=ipv6)
     if random_points is None:
@@ -118,7 +121,7 @@ def generateClashSubFile(account: Account = None,
             "server": point.ip,
             "port": point.port,
             "ip": "172.16.0.2",
-            "private-key": account.private_key,
+            "private-key": account_to_use.private_key,
             "public-key": CF_CONFIG.get("publicKey"),
             "udp": True,
             "remote-dns-resolve": True,
@@ -130,10 +133,8 @@ def generateClashSubFile(account: Account = None,
             config_data["dns"] = ['1.1.1.1', '1.0.0.1']
 
         user_config.append(config_data)
-    if is_meta:
-        clash_json = copy.deepcopy(CLASH_META)
-    else:
-        clash_json = copy.deepcopy(CLASH)
+    
+    clash_json = copy.deepcopy(CLASH_META if is_meta else CLASH)
     clash_json["proxies"] = user_config
     for proxy_group in clash_json["proxy-groups"]:
         proxy_group["proxies"] += [proxy["name"] for proxy in user_config]
@@ -151,6 +152,7 @@ def generateClashSubFile(account: Account = None,
     return clash_yaml
 
 
+@pure(allow_logging=True)
 def generateWireguardSubFile(account: Account = None,
                              logger=logging.getLogger(__name__),
                              best=False,
@@ -163,7 +165,7 @@ def generateWireguardSubFile(account: Account = None,
     :param ipv6: Whether to use ipv6 entrypoints
     :return:
     """
-    account = getCurrentAccount(logger) if account is None else account
+    account_to_use = getCurrentAccount(logger) if account is None else account
     entrypoints = getEntrypoints(ipv6=ipv6)
 
     # If there is no entrypoints, return a message
@@ -178,7 +180,7 @@ def generateWireguardSubFile(account: Account = None,
 
     # Generate user configuration file
     text = f"""[Interface]
-PrivateKey = {account.private_key}
+PrivateKey = {account_to_use.private_key}
 Address = 172.16.0.2/32
 DNS = 1.1.1.1
 MTU = 1280
@@ -190,7 +192,6 @@ Endpoint = {ip}:{random_point.port}
 PersistentKeepalive = 25
 """
     return text
-
 
 def generateSurgeSubFile(account: Account = None,
                          logger=logging.getLogger(__name__),
@@ -286,6 +287,7 @@ def generateSurgeSubFile(account: Account = None,
     return surge_ini
 
 
+@pure(allow_random=True, allow_logging=True)
 def generateShadowRocketSubFile(account: Account = None,
                                 logger=logging.getLogger(__name__),
                                 best=False,
@@ -300,7 +302,7 @@ def generateShadowRocketSubFile(account: Account = None,
     :param ipv6: Whether to use ipv6 entrypoints
     :return:
     """
-    account = getCurrentAccount(logger) if account is None else account
+    account_to_use = getCurrentAccount(logger) if account is None else account
 
     random_points, msg = getRandomEntryPoints(best, logger, ipv6)
     if random_points is None:
@@ -319,7 +321,7 @@ def generateShadowRocketSubFile(account: Account = None,
         ip = point.ip
         if ipv6:
             ip = f"[{ip}]"  # ipv6 address should be wrapped in square brackets
-        url = f"wg://{ip}:{point.port}?publicKey={CF_CONFIG.get('publicKey')}&privateKey={account.private_key}" \
+        url = f"wg://{ip}:{point.port}?publicKey={CF_CONFIG.get('publicKey')}&privateKey={account_to_use.private_key}" \
               f"&dns=1.1.1.1,1.0.0.1" \
               f"&ip=172.16.0.2&udp=1&flag={country}#{urllib.parse.quote(name)}"
         url_list.append(url)
