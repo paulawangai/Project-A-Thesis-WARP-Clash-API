@@ -27,6 +27,8 @@ import urllib.parse
 import yaml
 from flask import request
 
+from fp_decorators.immutable import immutable
+
 from config import PUBLIC_URL, RANDOM_COUNT, SECRET_KEY, SHARE_SUBSCRIPTION
 from models import Account
 from services.common import getCurrentAccount
@@ -151,6 +153,7 @@ def generateClashSubFile(account: Account = None,
     return clash_yaml
 
 
+@immutable
 def generateWireguardSubFile(account: Account = None,
                              logger=logging.getLogger(__name__),
                              best=False,
@@ -192,6 +195,7 @@ PersistentKeepalive = 25
     return text
 
 
+@immutable
 def generateSurgeSubFile(account: Account = None,
                          logger=logging.getLogger(__name__),
                          best=False,
@@ -285,7 +289,7 @@ def generateSurgeSubFile(account: Account = None,
 
     return surge_ini
 
-
+@immutable
 def generateShadowRocketSubFile(account: Account = None,
                                 logger=logging.getLogger(__name__),
                                 best=False,
@@ -330,6 +334,7 @@ def generateShadowRocketSubFile(account: Account = None,
     return sub_data
 
 
+@immutable
 def generateSingBoxSubFile(account: Account = None,
                            logger=logging.getLogger(__name__),
                            random_name=False,
@@ -346,7 +351,7 @@ def generateSingBoxSubFile(account: Account = None,
     """
     account = getCurrentAccount(logger) if account is None else account
 
-    random_points, msg = getRandomEntryPoints(best, logger, ipv6)
+    random_points, msg = getRandomEntryPoints(best=best, logger=logger, ipv6=ipv6)
     if random_points is None:
         return msg
 
@@ -399,7 +404,7 @@ def generateSingBoxSubFile(account: Account = None,
 
     return json.dumps(sing_box_json, ensure_ascii=False)
 
-
+@immutable
 def generateLoonSubFile(account: Account = None,
                         logger=logging.getLogger(__name__),
                         random_name=False,
