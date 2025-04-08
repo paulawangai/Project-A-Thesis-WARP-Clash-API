@@ -1,0 +1,79 @@
+models/entrypoint.py
+    C 20:0 Entrypoint - A
+    M 28:4 Entrypoint.__str__ - A
+    M 36:4 Entrypoint.__repr__ - A
+models/account.py
+    C 24:0 Account - A
+    M 57:4 Account.load - A
+    M 38:4 Account.__str__ - A
+    M 52:4 Account.save - A
+services/web_service.py
+    F 276:0 createApp - A
+    F 34:0 authorized - A
+    F 63:0 rateLimit - A
+    F 98:0 attachEndpoints - A
+services/tasks.py
+    F 30:0 doAddDataTaskOnce - A
+    F 78:0 reoptimizeEntryPoints - A
+    F 60:0 saveAccount - A
+services/subscription.py
+    F 196:0 generateSurgeSubFile - C
+    F 81:0 generateClashSubFile - B
+    F 156:0 generateWireguardSubFile - B
+    F 53:0 getRandomEntryPoints - A
+    F 291:0 generateShadowRocketSubFile - A
+    F 405:0 generateLoonSubFile - A
+    F 335:0 generateSingBoxSubFile - A
+services/cloudflare.py
+    F 74:0 register - A
+    F 141:0 updateLicenseKey - A
+    F 47:0 genAccountFromResponse - A
+    F 116:0 getAccount - A
+    F 171:0 updatePublicKey - A
+    F 192:0 getClientConfig - A
+services/common.py
+    F 24:0 getCurrentAccount - A
+services/scheduled_service.py
+    F 26:0 main - B
+services/account.py
+    F 48:0 doUpdateLicenseKey - A
+    F 24:0 resetAccountKey - A
+utils/wireguard.py
+    F 22:0 generateWireguardKeys - A
+utils/proxy.py
+    F 22:0 getProxy - A
+utils/node_name.py
+    M 33:4 NodeNameGenerator.generate_unique_name - B
+    C 22:0 NodeNameGenerator - A
+    M 62:4 NodeNameGenerator.next - A
+    M 27:4 NodeNameGenerator.__init__ - A
+utils/sub_useragent.py
+    F 37:0 getSubTypeFromUA - A
+utils/logger.py
+    F 22:0 createLogger - A
+utils/geoip.py
+    M 38:4 GeoIP.lookup - A
+    F 21:0 countryCodeToEmoji - A
+    C 34:0 GeoIP - A
+    M 35:4 GeoIP.__init__ - A
+    M 63:4 GeoIP.lookup_emoji - A
+    M 72:4 GeoIP.close - A
+utils/entrypoints.py
+    F 67:0 reloadEntrypoints - C
+    F 116:0 getEntrypoints - B
+    F 41:0 _getLogger - A
+    F 55:0 readCsv - A
+    F 156:0 optimizeEntrypoints - A
+    F 143:0 getBestEntrypoints - A
+tests/test_utils.py
+    C 28:0 TestUtils - A
+    M 29:4 TestUtils.test_getProxy - A
+    M 33:4 TestUtils.test_Wireguard - A
+    M 40:4 TestUtils.test_EntryPoints - A
+    M 46:4 TestUtils.test_GeoIP - A
+app.py
+    F 58:0 main - B
+    F 25:0 linuxStartWeb - A
+
+58 blocks (classes, functions, methods) analyzed.
+Average complexity: A (3.0344827586206895)
