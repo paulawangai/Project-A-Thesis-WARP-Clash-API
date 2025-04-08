@@ -2,7 +2,15 @@ account/*.json
 venv
 .DS_Store
 .idea
+project-a/
+env/
+.env/
+.venv/
+ENV/
 
 *.local
 logs/*.log
 __pycache__
+*.pyc
+*.py[cod]
+*$py.class
