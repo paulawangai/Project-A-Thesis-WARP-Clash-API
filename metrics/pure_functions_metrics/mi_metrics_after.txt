@@ -1,19 +1,21 @@
-models/__init__.py - A
-models/entrypoint.py - A
-models/account.py - A
-services/web_service.py - A
-services/tasks.py - A
-services/subscription.py - A
-services/cloudflare.py - A
-services/common.py - A
-services/scheduled_service.py - A
-services/account.py - A
-utils/wireguard.py - A
-utils/proxy.py - A
-utils/node_name.py - A
-utils/sub_useragent.py - A
-utils/logger.py - A
-utils/geoip.py - A
-utils/entrypoints.py - A
-tests/test_utils.py - A
-app.py - A
+models/__init__.py - A (100.00)
+models/entrypoint.py - A (100.00)
+models/account.py - A (100.00)
+services/web_service.py - A (57.71)
+services/tasks.py - A (78.86)
+services/subscription.py - A (53.19)
+services/cloudflare.py - A (73.97)
+services/common.py - A (87.02)
+services/scheduled_service.py - A (80.66)
+services/account.py - A (86.48)
+utils/wireguard.py - A (100.00)
+utils/proxy.py - A (100.00)
+utils/node_name.py - A (75.49)
+utils/sub_useragent.py - A (95.33)
+utils/logger.py - A (82.76)
+utils/geoip.py - A (73.99)
+utils/entrypoints.py - A (68.39)
+tests/test_utils.py - A (83.64)
+tests/test_pure_decorator.py - A (66.00)
+tests/test_pure_integration.py - A (85.49)
+app.py - A (76.12)
