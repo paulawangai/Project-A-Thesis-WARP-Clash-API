@@ -27,6 +27,9 @@ from services.common import getCurrentAccount
 from services.subscription import generateClashSubFile, generateWireguardSubFile, generateSurgeSubFile, \
     generateShadowRocketSubFile, generateSingBoxSubFile, generateLoonSubFile
 from utils.sub_useragent import getSubTypeFromUA
+from fp_decorators.higher_order import (
+    compose, pipe, curry, partial, memoize, higher_order
+)
 
 RATE_LIMIT_MAP = {}
 
@@ -57,6 +60,40 @@ def authorized(can_skip: bool = False):
 
         return decoratedFunction
 
+    return decorator
+
+@higher_order(enhanced=True)
+def enhanced_authorized(can_skip=False):
+    """
+    Enhanced version of the authorized decorator using higher-order function principles.
+    
+    All requests must be authorized unless they can be skipped.
+    
+    Args:
+        can_skip: If true, the request can skip authorization when SHARE_SUBSCRIPTION is true
+        
+    Returns:
+        Decorator function that handles authorization
+    """
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            # Skip authorization if the route can be shared
+            if SHARE_SUBSCRIPTION and can_skip:
+                return f(*args, **kwargs)
+
+            key = request.headers.get('X-Api-Key') or request.args.get('key')
+
+            if key == SECRET_KEY or not SECRET_KEY:
+                return f(*args, **kwargs)
+            else:
+                return {
+                    'code': 403,
+                    'message': 'Unauthorized'
+                }, 403
+
+        return decorated_function
+    
     return decorator
 
 
@@ -93,6 +130,53 @@ def rateLimit(limit: int = REQUEST_RATE_LIMIT):
         return decoratedFunction
 
     return decorator
+
+@higher_order(enhanced=True)
+def enhanced_rateLimit(limit=REQUEST_RATE_LIMIT):
+    """
+    Enhanced version of the rateLimit decorator using higher-order function principles.
+    
+    Rate limit decorator to prevent abuse.
+    
+    Args:
+        limit: Time in seconds between allowed requests
+        
+    Returns:
+        Decorator function that handles rate limiting
+    """
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            RATE_LIMIT_MAP = getattr(current_app, 'RATE_LIMIT_MAP', {})
+            remote_addr = request.headers.get('X-Forwarded-For') or request.remote_addr
+
+            try:
+                if remote_addr not in RATE_LIMIT_MAP:
+                    RATE_LIMIT_MAP[remote_addr] = time.time()
+
+                if RATE_LIMIT_MAP[remote_addr] + limit > time.time():
+                    return {
+                        'code': 429,
+                        'message': 'Too Many Requests'
+                    }, 429
+                else:
+                    RATE_LIMIT_MAP[remote_addr] = time.time()
+            except Exception as e:
+                current_app.logger.warning(e)
+                RATE_LIMIT_MAP[remote_addr] = time.time()
+
+            return f(*args, **kwargs)
+
+        return decorated_function
+    
+    return decorator
+
+# Create composed security decorator using enhanced decorators
+secure_endpoint = compose(
+    enhanced_authorized(can_skip=False),
+    enhanced_rateLimit(limit=REQUEST_RATE_LIMIT)
+)
+
 
 
 def attachEndpoints(app: Flask):
