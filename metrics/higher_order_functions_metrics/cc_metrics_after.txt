@@ -73,9 +73,15 @@ utils/entrypoints.py
     F 167:0 sort_by_quality - A (1)
     F 172:0 limit_results - A (1)
     F 181:0 enhanced_getBestEntrypoints - A (1)
+tests/test_utils.py
+    C 28:0 TestUtils - A (2)
+    M 29:4 TestUtils.test_getProxy - A (2)
+    M 33:4 TestUtils.test_Wireguard - A (1)
+    M 40:4 TestUtils.test_EntryPoints - A (1)
+    M 46:4 TestUtils.test_GeoIP - A (1)
 app.py
     F 58:0 main - B (6)
     F 25:0 linuxStartWeb - A (1)
 
-61 blocks (classes, functions, methods) analyzed.
-Average complexity: A (3.0491803278688523)
+66 blocks (classes, functions, methods) analyzed.
+Average complexity: A (2.9242424242424243)
