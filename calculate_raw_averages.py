@@ -4,7 +4,6 @@ import statistics
 # Initialize lists to store values for each metric
 loc, lloc, sloc, comments, multi, blank, single_comments = [], [], [], [], [], [], []
 
-
 with open('metrics/immutable_functions_metrics/raw_metrics_after.txt', 'r') as f:
     current_file = None
     for line in f:

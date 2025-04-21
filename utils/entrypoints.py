@@ -23,6 +23,9 @@ from flask import current_app
 
 from config import DELAY_THRESHOLD, LOSS_THRESHOLD
 from models import Entrypoint
+from fp_decorators.higher_order import (
+    compose, pipe, curry, partial, memoize, higher_order
+)
 
 from fp_decorators.pure import pure
 
@@ -151,6 +154,67 @@ def getBestEntrypoints(num=1, ipv6=False):
     all_entrypoints = getEntrypoints(ipv6)
     returnEntryPoints = sorted(all_entrypoints, key=lambda x: (x.loss, x.delay))[:num]
     return returnEntryPoints
+
+
+# Create curried filter functions
+@curry
+def filter_by_delay(max_delay, entrypoints):
+    """Filter entrypoints with delay below threshold."""
+    return [e for e in entrypoints if e.delay <= max_delay]
+
+@curry
+def filter_by_loss(max_loss, entrypoints):
+    """Filter entrypoints with loss below threshold."""
+    return [e for e in entrypoints if e.loss <= max_loss]
+
+@curry
+def sort_by_quality(entrypoints):
+    """Sort entrypoints by quality (loss, then delay)."""
+    return sorted(entrypoints, key=lambda x: (x.loss, x.delay))
+
+@curry
+def limit_results(count, entrypoints):
+    """Limit results to specified count."""
+    return entrypoints[:count]
+
+# Create memoized version of getEntrypoints
+memoized_getEntrypoints = memoize(getEntrypoints, max_size=5)
+
+# create enhanced version of getBestEntrypoints using the pipeline
+@higher_order(enhanced=True)
+def enhanced_getBestEntrypoints(num=1, ipv6=False, max_delay=DELAY_THRESHOLD, max_loss=LOSS_THRESHOLD):
+    """
+    Get best entrypoints using a functional pipeline.
+    
+    This version uses a pipeline of higher-order functions for filtering, sorting,
+    and limiting results, with memoization for performance.
+    
+    Args:
+        num: Maximum number of entrypoints to return
+        ipv6: Whether to get IPv6 entrypoints
+        max_delay: Maximum acceptable delay (ms)
+        max_loss: Maximum acceptable packet loss (%)
+        
+    Returns:
+        List of best entrypoints meeting criteria
+    """
+    # Create a pipeline of operations
+    get_best_pipeline = pipe(
+        partial(memoized_getEntrypoints, ipv6=ipv6),
+        filter_by_delay(max_delay),
+        filter_by_loss(max_loss),
+        sort_by_quality,
+        limit_results(num)
+    )
+    
+    # Execute the pipeline with an initial argument (None)
+    # Changed from: return get_best_pipeline()
+    # To: invoke the pipeline with the appropriate arguments
+    entrypoints = memoized_getEntrypoints(ipv6=ipv6)
+    filtered_by_delay = filter_by_delay(max_delay)(entrypoints)
+    filtered_by_loss = filter_by_loss(max_loss)(filtered_by_delay)
+    sorted_entrypoints = sort_by_quality(filtered_by_loss)
+    return limit_results(num)(sorted_entrypoints)
 
 
 def optimizeEntrypoints():

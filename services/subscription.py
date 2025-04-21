@@ -35,7 +35,11 @@ from services.common import getCurrentAccount
 from utils.entrypoints import getEntrypoints, getBestEntrypoints
 from utils.geoip import GeoIP
 from utils.node_name import NodeNameGenerator
+
 from fp_decorators.pure import pure 
+from fp_decorators.higher_order import (
+    compose, pipe, curry, partial, memoize, higher_order
+)
 
 CF_CONFIG = yaml.safe_load(open("./config/cf-config.json", "r", encoding="utf8"))
 CLASH = yaml.safe_load(open("./config/clash.json", "r", encoding="utf8"))
@@ -80,6 +84,57 @@ def getRandomEntryPoints(best=False,
 
 
 @pure(allow_random=True, allow_logging=True)
+@higher_order(enhanced=True)
+def enhanced_getRandomEntryPoints(best=False, logger=logging.getLogger(__name__), ipv6=False):
+    """
+    Enhanced version of getRandomEntryPoints using higher-order function principles.
+    Gets random or best entry points for configuration generation.
+    
+    Args:
+        best: Whether to use the best entrypoints instead of random ones
+        logger: Logger instance
+        ipv6: Whether to use IPv6 entrypoints
+        
+    Returns:
+        Tuple of (entrypoints, error_message)
+    """
+    # Create specialized functions using partial application
+    get_ipv4_entrypoints = partial(getEntrypoints, ipv6=False)
+    get_ipv6_entrypoints = partial(getEntrypoints, ipv6=True)
+    
+    # Get appropriate entrypoints based on ipv6 flag
+    get_appropriate_entrypoints = get_ipv6_entrypoints if ipv6 else get_ipv4_entrypoints
+    entrypoints = get_appropriate_entrypoints()
+    
+    # Handle empty entrypoints
+    if entrypoints is None or len(entrypoints) == 0:
+        return None, "No entrypoints available. Please try again later."
+    
+    # Create a pipeline for selecting entrypoints
+    if best:
+        # Use best entrypoints
+        get_points = partial(getBestEntrypoints, RANDOM_COUNT, ipv6=ipv6)
+    else:
+        # Use random entrypoints
+        @higher_order
+        def get_random_sample(count, items):
+            if len(items) < count:
+                return items
+            return random.sample(items, count)
+            
+        get_points = partial(get_random_sample, RANDOM_COUNT)
+
+    # Get the points
+    if len(entrypoints) < RANDOM_COUNT:
+        logger.warning(f"Entrypoints is less than {RANDOM_COUNT}, only {len(entrypoints)} available.")
+        random_points = entrypoints
+    else:
+        random_points = get_points(entrypoints)
+
+    return random_points, ""
+
+
+
 def generateClashSubFile(account: Account = None,
                          logger=logging.getLogger(__name__),
                          best=False,
